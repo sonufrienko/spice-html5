@@ -27,6 +27,7 @@ import { SpiceFileXferTask } from './filexfer.js';
 import { SpiceInputsConn, sendCtrlAltDel } from './inputs.js';
 import { SpiceDisplayConn } from './display.js';
 import { SpicePlaybackConn } from './playback.js';
+import { SpiceRecordConn } from './record.js';
 import { SpicePortConn } from './port.js';
 import { handle_file_dragover, handle_file_drop } from './filexfer.js';
 import { resize_helper, handle_resize } from './resize.js';
@@ -176,6 +177,8 @@ SpiceMainConn.prototype.process_channel_message = function(msg)
                 this.cursor = new SpiceCursorConn(conn);
             else if (chans.channels[i].type == Constants.SPICE_CHANNEL_PLAYBACK)
                 this.cursor = new SpicePlaybackConn(conn);
+            else if (chans.channels[i].type == Constants.SPICE_CHANNEL_RECORD)
+                this.cursor = new SpiceRecordConn(conn);
             else if (chans.channels[i].type == Constants.SPICE_CHANNEL_PORT)
                 this.ports.push(new SpicePortConn(conn));
             else
