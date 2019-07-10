@@ -210,6 +210,10 @@ export var Constants = {
   SPICE_AUDIO_DATA_MODE_CELT_0_5_1    : 2,
   SPICE_AUDIO_DATA_MODE_OPUS          : 3,
 
+  SPICE_RECORD_DATA_MODE_RAW          : 1,
+  SPICE_RECORD_DATA_MODE_CELT_0_5_1   : 2,
+  SPICE_RECORD_DATA_MODE_OPUS         : 3,
+
   SPICE_AUDIO_FMT_INVALID             : 0,
   SPICE_AUDIO_FMT_S16                 : 1,
 
