@@ -167,6 +167,13 @@ export var Constants = {
   SPICE_MSG_PLAYBACK_MUTE             : 106,
   SPICE_MSG_PLAYBACK_LATENCY          : 107,
 
+  SPICE_MSG_RECORD_START              : 101,
+  SPICE_MSG_RECORD_STOP               : 102,
+
+  SPICE_MSGC_RECORD_DATA              : 101,
+  SPICE_MSGC_RECORD_MODE              : 102,
+  SPICE_MSGC_RECORD_START_MARK        : 103,
+
   SPICE_MSG_SPICEVMC_DATA             : 101,
   SPICE_MSG_PORT_INIT                 : 201,
   SPICE_MSG_PORT_EVENT                : 202,
