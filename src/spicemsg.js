@@ -974,6 +974,24 @@ SpiceMsgPlaybackMode.prototype =
     },
 }
 
+function SpiceMsgRecordStart(a, at)
+{
+    this.from_buffer(a, at);
+}
+
+SpiceMsgRecordStart.prototype =
+{
+    from_buffer: function(a, at, mb)
+    {
+        at = at || 0;
+        var dv = new SpiceDataView(a);
+        this.channels = dv.getUint32(at, true); at += 4;
+        this.format = dv.getUint16(at, true); at += 2;
+        this.frequency = dv.getUint32(at, true); at += 4;
+        return at;
+    },
+}
+
 function SpiceMsgPlaybackStart(a, at)
 {
     this.from_buffer(a, at);
@@ -1441,4 +1459,5 @@ export {
   SpiceMsgcRecordStartMark,
   SpiceMsgcRecordMode,
   SpiceMsgcRecordData,
+  SpiceMsgRecordStart
 };
