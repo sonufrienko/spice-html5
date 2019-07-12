@@ -32,6 +32,10 @@ function SpiceRecordConn()
 {
     SpiceConn.apply(this, arguments);
 
+    // Cross browser
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    
+    this.audioContext = new AudioContext();
     this.queue = new Array();
     this.append_okay = false;
     this.start_time = 0;
@@ -55,12 +59,14 @@ SpiceRecordConn.prototype.process_channel_message = function(msg)
         this.send_start_mark_message();
         this.send_mode_message();
         this.start_microphone();
+
+        // Stop a Microphone when we stop WebSocket
+        this.ws.addEventListener('close', this.stop_microphone.bind(this));
     }
 
     if (msg.type == Constants.SPICE_MSG_RECORD_STOP)
     {
         Utils.DEBUG > 0 && console.log("RECORD_STOP");
-        debugger;
     }
 
     return false;
@@ -102,9 +108,7 @@ SpiceRecordConn.prototype.start_microphone = function() {
 }
 
 SpiceRecordConn.prototype.use_microphone_stream = function(stream) {
-    // Cross browser
-    var AudioContext = window.AudioContext || window.webkitAudioContext;
-    var audioContext = new AudioContext();
+    var audioContext = this.audioContext;
 
     var bufferSize = 2048;
 
@@ -136,6 +140,10 @@ SpiceRecordConn.prototype.microphone_onaudioprocess = function(analyserNode) {
     // copies the current frequency data into a Uint8Array
     analyserNode.getByteFrequencyData(array);
     this.send_data_message(array);
+}
+
+SpiceRecordConn.prototype.stop_microphone = function() {
+    this.audioContext.close();
 }
 
 export {
