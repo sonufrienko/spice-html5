@@ -724,6 +724,27 @@ SpiceMsgcRecordStartMark.prototype =
         return 4;
     }
 }
+
+function SpiceMsgcRecordMode(mode)
+{
+    this.time_stamp = new Date();
+    this.mode = mode;
+}
+
+SpiceMsgcRecordMode.prototype =
+{
+    to_buffer: function(a, at)
+    {
+        at = at || 0;
+        var dv = new SpiceDataView(a);
+        dv.setUint32(at, this.time_stamp, true); at += 4;
+        dv.setUint32(at, this.mode, true); at += 4;
+    },
+    buffer_size: function()
+    {
+        return 8;
+    }
+}
 function SpiceMsgDisplayBase()
 {
 }
@@ -1387,4 +1408,5 @@ export {
   SpiceMsgDisplayInvalList,
   SpiceMsgPortInit,
   SpiceMsgcRecordStartMark,
+  SpiceMsgcRecordMode,
 };
