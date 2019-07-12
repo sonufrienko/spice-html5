@@ -745,6 +745,37 @@ SpiceMsgcRecordMode.prototype =
         return 8;
     }
 }
+
+function SpiceMsgcRecordData(time_stamp, data)
+{
+    this.time_stamp = time_stamp;
+    this.data = data;
+}
+
+SpiceMsgcRecordData.prototype =
+{
+    to_buffer: function(a, at)
+    {
+        at = at || 0;
+        var dv = new SpiceDataView(a);
+        dv.setUint32(at, this.time_stamp, true); at += 4;
+        if (this.data && this.data.byteLength > 0)
+        {
+            var u8arr = new Uint8Array(this.data.buffer);
+            for (var i = 0; i < u8arr.length; i++, at++)
+                dv.setUint8(at, u8arr[i], true);
+        }
+    },
+    buffer_size: function()
+    {
+        if (this.data){
+                return 4 + this.data.byteLength;
+            }
+        else
+            return 4;
+    }
+}
+
 function SpiceMsgDisplayBase()
 {
 }
@@ -1409,4 +1440,5 @@ export {
   SpiceMsgPortInit,
   SpiceMsgcRecordStartMark,
   SpiceMsgcRecordMode,
+  SpiceMsgcRecordData,
 };
