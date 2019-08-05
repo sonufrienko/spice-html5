@@ -27,6 +27,7 @@ import * as Utils from './utils.js';
 import * as Messages from './spicemsg.js';
 import { Constants } from './enums.js';
 import { SpiceConn } from './spiceconn.js';
+import Resampler from './resampler.js';
 
 function SpiceRecordConn()
 {
@@ -109,36 +110,37 @@ SpiceRecordConn.prototype.start_microphone = function() {
 
 SpiceRecordConn.prototype.use_microphone_stream = function(stream) {
     var audioContext = this.audioContext;
+    var bufferSize = 4096;
+    this.res = new Resampler(audioContext.sampleRate, 96000, 2, bufferSize);
 
-    var bufferSize = 2048;
 
-    var gain_node = audioContext.createGain();
-    gain_node.connect(audioContext.destination);
+    var microphone = audioContext.createMediaStreamSource(stream);
+    var processor = audioContext.createScriptProcessor(bufferSize, 2, 2);
 
-    var microphone_stream = audioContext.createMediaStreamSource(stream);
-    microphone_stream.connect(gain_node);
+    processor.onaudioprocess = this.microphone_onaudioprocess.bind(this);    
 
-    var script_processor_node = audioContext.createScriptProcessor(bufferSize, 1, 1);
-    microphone_stream.connect(script_processor_node);
-
-    var script_processor_fft_node = audioContext.createScriptProcessor(bufferSize, 1, 1);
-    script_processor_fft_node.connect(gain_node);
-
-    var analyserNode = audioContext.createAnalyser();
-    analyserNode.smoothingTimeConstant = 0;
-    analyserNode.fftSize = bufferSize;
-
-    microphone_stream.connect(analyserNode);
-    analyserNode.connect(script_processor_fft_node);
-
-    script_processor_fft_node.onaudioprocess = this.microphone_onaudioprocess.bind(this, analyserNode);
+    microphone.connect(processor);
+    processor.connect(audioContext.destination);
 }
 
-SpiceRecordConn.prototype.microphone_onaudioprocess = function(analyserNode) {
-    var array = new Uint8Array(analyserNode.frequencyBinCount);
+SpiceRecordConn.prototype.microphone_onaudioprocess = function(e) {
+    var toS16PCM = function(output, offset, input) {
+        for (var i = 0; i < input.length; i++, offset+=2){
+            var s = Math.max(-1, Math.min(1, input[i]));
+            output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        }
+    };
+
+    var left = this.res.resample(e.inputBuffer.getChannelData(0));
+    var right = this.res.resample(e.inputBuffer.getChannelData(1));
+
+    var buffer = new ArrayBuffer((left.length + right.length) * 2);
+    var view = new DataView(buffer);
+
+    toS16PCM(view, 0, left);
+    toS16PCM(view, left.length * 2, right);
         
-    // copies the current frequency data into a Uint8Array
-    analyserNode.getByteFrequencyData(array);
+    var array = new Uint8Array(buffer);
     this.send_data_message(array);
 }
 
